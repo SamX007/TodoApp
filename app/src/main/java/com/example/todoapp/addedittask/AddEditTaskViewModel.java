@@ -11,7 +11,7 @@ import com.example.todoapp.database.TaskEntry;
 
 public class AddEditTaskViewModel extends AndroidViewModel {
 
-    Repository repository;
+    static Repository repository;
     LiveData<TaskEntry> task;
 
     AddEditTaskViewModel(Application application, int taskId){
@@ -35,5 +35,11 @@ public class AddEditTaskViewModel extends AndroidViewModel {
         repository.insertTask(task);
     }
 
+    public void deleteTask(TaskEntry task) {
+        repository.deleteTask(task);
+    }
 
+    public static void deleteAllTask(){
+        repository.deleteAllTask();
+    }
 }

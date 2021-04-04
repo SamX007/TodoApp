@@ -1,5 +1,6 @@
 package com.example.todoapp.addedittask;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -8,12 +9,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
 import com.example.todoapp.R;
 import com.example.todoapp.database.TaskEntry;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class AddEditTaskActivity extends AppCompatActivity {
@@ -34,6 +37,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
     EditText mEditText;
     RadioGroup mRadioGroup;
     Button mButton;
+    Button deleteButton;
+    CalendarView calendarView;
+    Calendar calendar = Calendar.getInstance();
+    private boolean isUpdate = false;
 
     private int mTaskId = DEFAULT_TASK_ID;
 
@@ -50,6 +57,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
         if (savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_TASK_ID)) {
             mTaskId = savedInstanceState.getInt(INSTANCE_TASK_ID, DEFAULT_TASK_ID);
+            isUpdate = savedInstanceState.getBoolean("isUpdate");
+            if(isUpdate){
+                deleteButton.setVisibility(View.VISIBLE);
+            }
         }
 
         Intent intent = getIntent();
@@ -59,21 +70,29 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
             if (mTaskId == DEFAULT_TASK_ID) {
                 // populate the UI
-
+                deleteButton.setVisibility(View.VISIBLE);
+                isUpdate = true;
                 mTaskId = intent.getIntExtra(EXTRA_TASK_ID, DEFAULT_TASK_ID);
                 AddEditTaskViewModelFactory factory = new AddEditTaskViewModelFactory(getApplication(), mTaskId);
                 viewModel = ViewModelProviders.of(this, factory).get(AddEditTaskViewModel.class);
 
                 viewModel.getTask().observe(this, new Observer<TaskEntry>() {
                     @Override
-                    public void onChanged(TaskEntry taskEntry) {
+                    public void onChanged(final TaskEntry taskEntry) {
                         viewModel.getTask().removeObserver(this);
                         populateUI(taskEntry);
+                        deleteButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                onDeleteButtonClicked(taskEntry);
+                            }
+                        });
                     }
                 });
 
             }
         }else{
+            isUpdate = false;
             AddEditTaskViewModelFactory factory = new AddEditTaskViewModelFactory(getApplication(), mTaskId);
             viewModel = ViewModelProviders.of(this, factory).get(AddEditTaskViewModel.class);
         }
@@ -82,6 +101,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(INSTANCE_TASK_ID, mTaskId);
+        outState.putBoolean("isUpdate", isUpdate);
         super.onSaveInstanceState(outState);
     }
 
@@ -91,14 +111,29 @@ public class AddEditTaskActivity extends AppCompatActivity {
     private void initViews() {
         mEditText = findViewById(R.id.editTextTaskDescription);
         mRadioGroup = findViewById(R.id.radioGroup);
-
+        calendarView = findViewById(R.id.calendarView);
+        deleteButton = findViewById(R.id.deleteButton);
         mButton = findViewById(R.id.saveButton);
+
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView view12, int year, int month, int dayOfMonth) {
+                calendar.clear();
+                calendar.set(year, month, dayOfMonth);
+            }
+        });
+
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onSaveButtonClicked();
             }
         });
+    }
+
+    private void onDeleteButtonClicked(TaskEntry task) {
+        viewModel.deleteTask(task);
+        finish();
     }
 
     /**
@@ -112,8 +147,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
         }
         mEditText.setText(task.getDescription());
         setPriorityInViews(task.getPriority());
-
     }
+
+
 
     /**
      * onSaveButtonClicked is called when the "save" button is clicked.
@@ -123,17 +159,21 @@ public class AddEditTaskActivity extends AppCompatActivity {
         // Not yet implemented
         String description = mEditText.getText().toString();
         int priority = getPriorityFromViews();
-        Date date = new Date();
-        TaskEntry todo = new TaskEntry(description, priority, date);
-        if(mTaskId == DEFAULT_TASK_ID)
-            viewModel.insertTask(todo);
-        else{
-            todo.setId(mTaskId);
-            viewModel.updateTask(todo);
-
+        if(description.isEmpty()){
+            mEditText.requestFocus();
+            mEditText.setError("Task name required");
         }
-        finish();
-
+        else{
+            Date date = new Date();
+            TaskEntry todo = new TaskEntry(description, priority, date,calendar.getTime());
+            if(mTaskId == DEFAULT_TASK_ID)
+                viewModel.insertTask(todo);
+            else{
+                todo.setId(mTaskId);
+                viewModel.updateTask(todo);
+            }
+            finish();
+        }
     }
 
     /**

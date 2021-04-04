@@ -11,8 +11,10 @@
         android:theme="@style/Theme.TodoApp">
         <activity
             android:name="com.example.todoapp.addedittask.AddEditTaskActivity"
-            android:label="Add a new Task" />
-        <activity android:name="com.example.todoapp.tasks.MainActivity">
+            android:label="Task" />
+
+        <activity android:name="com.example.todoapp.tasks.MainActivity"
+            android:theme="@style/Theme.TodoApp.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

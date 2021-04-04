@@ -20,6 +20,8 @@
         android:layout_height="wrap_content"
         android:gravity="start"
         android:hint="@string/edit_task_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:paddingBottom="@dimen/activity_horizontal_margin" />
 
     <!-- TextView and FrameLayout (which contains buttons) for Priority Selection -->
@@ -74,12 +76,30 @@
     </RadioGroup>
 
     <!-- Add button -->
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/deleteButton"
+        style="@style/TextAppearance.AppCompat.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20sp"
+        android:layout_gravity="center"
+        android:background="@color/colorPrimary"
+        android:text="@string/delete"
+        android:visibility="gone"
+        android:textColor="@android:color/primary_text_dark" />
+
     <Button
         android:id="@+id/saveButton"
         style="@style/TextAppearance.AppCompat.Large"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="10sp"
         android:background="@color/colorPrimary"
         android:text="@string/add_button"
         android:textColor="@android:color/primary_text_dark" />
