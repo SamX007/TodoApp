@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -15,9 +17,11 @@ import android.widget.RadioGroup;
 
 import com.example.todoapp.R;
 import com.example.todoapp.database.TaskEntry;
+import com.example.todoapp.tasks.MainActivity;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class AddEditTaskActivity extends AppCompatActivity {
 
@@ -42,6 +46,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
     Calendar calendar = Calendar.getInstance();
     private boolean isUpdate = false;
 
+
     private int mTaskId = DEFAULT_TASK_ID;
 
 
@@ -50,8 +55,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_edit_task);
-
-
 
         initViews();
 
@@ -131,9 +134,22 @@ public class AddEditTaskActivity extends AppCompatActivity {
         });
     }
 
-    private void onDeleteButtonClicked(TaskEntry task) {
-        viewModel.deleteTask(task);
-        finish();
+    private void onDeleteButtonClicked(final TaskEntry task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(AddEditTaskActivity.this);
+        builder.setMessage("Delete Task?")
+                .setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                })
+                .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        viewModel.deleteTask(task);
+                        finish();
+                    }
+                });
+        // Create the AlertDialog object and return it
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     /**

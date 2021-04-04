@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -72,12 +74,25 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
 
             // Called when a user swipes left or right on a ViewHolder
             @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+            public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 // Here is where you'll implement swipe to delete
-
-                int position = viewHolder.getAdapterPosition();
-                List<TaskEntry> todoList = mAdapter.getTasks();
-                viewModel.deleteTask(todoList.get(position));
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setMessage("Delete Task?")
+                        .setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                            }
+                        })
+                        .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                int position = viewHolder.getAdapterPosition();
+                                List<TaskEntry> todoList = mAdapter.getTasks();
+                                viewModel.deleteTask(todoList.get(position));
+                            }
+                        });
+                // Create the AlertDialog object and return it
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                mAdapter.notifyDataSetChanged();
             }
         }).attachToRecyclerView(mRecyclerView);
 
@@ -130,7 +145,20 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.ItemC
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            AddEditTaskViewModel.deleteAllTask();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Delete All Tasks?")
+                    .setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    })
+                    .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            AddEditTaskViewModel.deleteAllTask();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            AlertDialog dialog = builder.create();
+            dialog.show();
             return true;
         }
 
